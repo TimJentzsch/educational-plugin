@@ -35,7 +35,7 @@ object CourseViewUtils {
         val psiFile = value.containingFile ?: return null
         val virtualFile = psiFile.virtualFile ?: return null
         val path = EduUtils.pathRelativeToTask(project, virtualFile)
-        val visibleFile = task.getTaskFile(path) ?: task.additionalFiles[path]
+        val visibleFile = task.getTaskFile(path)
         if (visibleFile?.isVisible == true) childNode else null
       }
       else -> null
