@@ -22,8 +22,8 @@ import com.jetbrains.edu.coursecreator.actions.NewStudyItemUiModel
 import com.jetbrains.edu.coursecreator.actions.StudyItemType
 import com.jetbrains.edu.coursecreator.ui.CCItemPositionPanel
 import com.jetbrains.edu.coursecreator.ui.showNewStudyItemDialog
-import com.jetbrains.edu.learning.*
-import com.jetbrains.edu.learning.FileKind.*
+import com.jetbrains.edu.learning.EduCourseBuilder
+import com.jetbrains.edu.learning.LanguageSettings
 import com.jetbrains.edu.learning.courseFormat.Course
 import com.jetbrains.edu.learning.courseFormat.FrameworkLesson
 import com.jetbrains.edu.learning.courseFormat.Lesson
@@ -33,6 +33,8 @@ import com.jetbrains.edu.learning.gradle.GradleConstants.BUILD_GRADLE
 import com.jetbrains.edu.learning.gradle.GradleCourseBuilderBase
 import com.jetbrains.edu.learning.gradle.JdkProjectSettings
 import com.jetbrains.edu.learning.gradle.generation.GradleCourseProjectGenerator
+import com.jetbrains.edu.learning.isUnitTestMode
+import com.jetbrains.edu.learning.kotlinVersion
 import com.jetbrains.edu.learning.projectView.CourseViewPane
 import java.io.File
 
@@ -94,17 +96,11 @@ class AndroidCourseBuilder : GradleCourseBuilderBase() {
         LOG.warn("Failed to obtain internal template: `$templateName`")
         continue
       }
-      val text = template.getText(attributes)
-      when (fileInfo.type) {
-        TASK_FILE -> {
-          val taskFile = TaskFile()
-          taskFile.name = fileInfo.path
-          taskFile.setText(text)
-          task.addTaskFile(taskFile)
-        }
-        TEST_FILE -> task.addTestsTexts(fileInfo.path, text)
-        ADDITIONAL_FILE -> task.addAdditionalFile(fileInfo.path, text)
-      }
+      val taskFile = TaskFile()
+      taskFile.name = fileInfo.path
+      taskFile.setText(template.getText(attributes))
+      taskFile.isVisible = fileInfo.isVisible
+      task.addTaskFile(taskFile)
     }
   }
 
@@ -139,15 +135,15 @@ class AndroidCourseBuilder : GradleCourseBuilderBase() {
     private fun defaultAndroidCourseFiles(packageName: String): Map<String, FileInfo> {
       val packagePath = packageName.replace('.', VfsUtilCore.VFS_SEPARATOR_CHAR)
       return mapOf(
-        "android-task-build.gradle" to FileInfo(BUILD_GRADLE, ADDITIONAL_FILE),
-        "android-MainActivity.kt" to FileInfo("src/main/java/$packagePath/MainActivity.kt", TASK_FILE),
-        "android-AndroidManifest.xml" to FileInfo("src/main/AndroidManifest.xml", TASK_FILE),
-        "android-activity_main.xml" to FileInfo("src/main/res/layout/activity_main.xml", TASK_FILE),
-        "android-styles.xml" to FileInfo("src/main/res/values/styles.xml", TASK_FILE),
-        "android-strings.xml" to FileInfo("src/main/res/values/strings.xml", TASK_FILE),
-        "android-colors.xml" to FileInfo("src/main/res/values/colors.xml", TASK_FILE),
-        "android-ExampleUnitTest.kt" to FileInfo("src/test/java/$packagePath/ExampleUnitTest.kt", TEST_FILE),
-        "android-AndroidEduTestRunner.kt" to FileInfo("src/androidTest/java/$packagePath/AndroidEduTestRunner.kt", TEST_FILE)
+        "android-task-build.gradle" to FileInfo(BUILD_GRADLE, true),
+        "android-MainActivity.kt" to FileInfo("src/main/java/$packagePath/MainActivity.kt", true),
+        "android-AndroidManifest.xml" to FileInfo("src/main/AndroidManifest.xml", true),
+        "android-activity_main.xml" to FileInfo("src/main/res/layout/activity_main.xml", true),
+        "android-styles.xml" to FileInfo("src/main/res/values/styles.xml", true),
+        "android-strings.xml" to FileInfo("src/main/res/values/strings.xml", true),
+        "android-colors.xml" to FileInfo("src/main/res/values/colors.xml", true),
+        "android-ExampleUnitTest.kt" to FileInfo("src/test/java/$packagePath/ExampleUnitTest.kt", false),
+        "android-AndroidEduTestRunner.kt" to FileInfo("src/androidTest/java/$packagePath/AndroidEduTestRunner.kt", false)
       )
     }
   }
@@ -168,5 +164,5 @@ class AndroidCourseBuilder : GradleCourseBuilderBase() {
     ) ?: defaultVersion
   }
 
-  private data class FileInfo(val path: String, val type: FileKind)
+  private data class FileInfo(val path: String, val isVisible: Boolean)
 }
