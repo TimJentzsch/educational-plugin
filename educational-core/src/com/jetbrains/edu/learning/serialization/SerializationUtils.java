@@ -14,8 +14,9 @@ import com.jetbrains.edu.learning.authUtils.TokenInfo;
 import com.jetbrains.edu.learning.checkio.courseFormat.CheckiOCourse;
 import com.jetbrains.edu.learning.courseFormat.*;
 import com.jetbrains.edu.learning.courseFormat.tasks.*;
-import com.jetbrains.edu.learning.serialization.converter.json.JsonLocalCourseConverter;
+import com.jetbrains.edu.learning.serialization.converter.json.local.JsonLocalCourseConverter;
 import com.jetbrains.edu.learning.serialization.converter.json.local.To8VersionLocalCourseConverter;
+import com.jetbrains.edu.learning.serialization.converter.json.local.To9VersionLocalCourseConverter;
 import com.jetbrains.edu.learning.serialization.converter.json.local.ToSeventhVersionLocalCourseConverter;
 import com.jetbrains.edu.learning.serialization.converter.xml.*;
 import com.jetbrains.edu.learning.stepik.StepikNames;
@@ -543,6 +544,7 @@ public class SerializationUtils {
           switch (version) {
             case 6: converter = new ToSeventhVersionLocalCourseConverter(); break;
             case 7: converter = new To8VersionLocalCourseConverter(); break;
+            case 8: converter = new To9VersionLocalCourseConverter(); break;
           }
           if (converter != null) {
             jsonObject = converter.convert(jsonObject);
